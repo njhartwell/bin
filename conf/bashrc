@@ -1,0 +1,173 @@
+function move_most_recent {
+	FROM="${1:-$HOME/Desktop}"
+	FILE="`ls -rt --indicator-style=none "$FROM" | tail -n 1`"
+	echo "$FILE"
+	mv "$FROM/$FILE" .
+}
+
+
+# Add some directories to the path if they exist
+for D in "${HOME}/bin"; do
+	if [ -d "$D" ]; then
+		PATH="${PATH}:${D}"
+	fi
+done
+export PATH
+
+
+alias del='gvfs-trash'
+alias dir='ls -lF --color=auto'
+alias grep='grep --color=auto'
+alias egrep='egrep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias ls='ls -F --color=auto'
+alias mysqlrepair_all='mysqlrepair -A --auto-repair -g -m -o -r'
+alias mysqlcheck_all='mysqlcheck --auto-repair --check --optimize --all-databases'
+alias screen='screen -xRR'
+alias ppid='ps -o ppid --no-headers -p'
+
+
+# Check for our program checker, then check for programs
+TEST_FOR_PROGRAM=test_for_program
+
+if [ ! -z "$BASH_SOURCE" ]; then
+	P="`dirname "$BASH_SOURCE"`/../test_for_program";
+	if [ -f "$P" ]; then
+		TEST_FOR_PROGRAM="$P"
+	fi
+fi
+
+if $TEST_FOR_PROGRAM 'less'; then
+	export PAGER=less
+else
+	alias less=more
+fi
+
+if $TEST_FOR_PROGRAM 'vim'; then
+	alias vi='vim'
+	export EDITOR="vim +0"
+else
+	export EDITOR=vi
+fi
+
+
+# Below are the color init strings for the basic file types. A color init
+# string consists of one or more of the following numeric codes:
+# Attribute codes:
+# 00=none 01=bold 04=underscore 05=blink 07=reverse 08=concealed
+# Text color codes:
+# 30=black 31=red 32=green 33=yellow 34=blue 35=magenta 36=cyan 37=white
+# Background color codes:
+# 40=black 41=red 42=green 43=yellow 44=blue 45=magenta 46=cyan 47=white
+LS_COLORS="no=00" # global default; everything should override this
+LS_COLORS="${LS_COLORS}:fi=00" # file
+LS_COLORS="${LS_COLORS}:di=01;34" # directory
+LS_COLORS="${LS_COLORS}:ln=01;36" # symbolic link; if set to "target" then it inherits the color of the file to which it points
+LS_COLORS="${LS_COLORS}:pi=40;33" # pipe / FIFO
+LS_COLORS="${LS_COLORS}:so=01;35" # socket
+LS_COLORS="${LS_COLORS}:do=40;33;01" # door
+LS_COLORS="${LS_COLORS}:bd=40;33;01" # block devide driver
+LS_COLORS="${LS_COLORS}:cd=40;33;01" # character device driver
+LS_COLORS="${LS_COLORS}:or=01;05;37;41" # symlink to non-stat'able file
+LS_COLORS="${LS_COLORS}:mi=01;05;37;41" # missing?
+LS_COLORS="${LS_COLORS}:su=37;41" # setuid (u+s)
+LS_COLORS="${LS_COLORS}:sg=30;43" # setgid (g+s)
+LS_COLORS="${LS_COLORS}:tw=30;42" # sticky, other-writable dir (+t,o+w)
+LS_COLORS="${LS_COLORS}:ow=30;42" # other-writable dir (o+w)
+LS_COLORS="${LS_COLORS}:st=37;44" # sticky dir (+t)
+LS_COLORS="${LS_COLORS}:ex=01;32" # executable file
+#LS_COLORS="${LS_COLORS}:lc=" # LEFTCODE
+#LS_COLORS="${LS_COLORS}:rc=" # RIGHTCODE
+#LS_COLORS="${LS_COLORS}:ec=" # ENDCODE
+#LS_COLORS="${LS_COLORS}:wo=" # WRITEOTHERS (dirs)
+#LS_COLORS="${LS_COLORS}:wt=" # WRITEOTHERSTICKY
+
+# per extension settings
+# -- executables are bright green
+for T in bat btm cmd com csh exe sh; do
+	LS_COLORS="${LS_COLORS}:*.${T}=01;32"
+done
+# -- archives are bright red
+for T in 7z ace arj bz bz2 cpio deb dz gz jar lzh lzma rar rpm rz svgz tar taz tbz2 tgz tz z Z zip zoo; do
+	LS_COLORS="${LS_COLORS}:*.${T}=01;31"
+done
+# -- images are bright magenta
+for T in asf avi bmp dl flc fli gif gl jpeg jpg m2v m4v mkv mng mov mp4 mp4v mpeg mpg nuv ogm pbm pcx pgm png ppm qt rm rmvb svg tga tif tiff vob wmv xbm xcf xpm xwd yuv; do
+	LS_COLORS="${LS_COLORS}:*.${T}=01;35"
+done
+# -- html, php are bright yellow
+for T in htm html php; do
+	LS_COLORS="${LS_COLORS}:*.${T}=01;33"
+done
+# -- audio files are bright cyan
+for T in aac au flac mid midi mka mp3 mpc ogg ra wav; do
+	LS_COLORS="${LS_COLORS}:*.${T}=01;36"
+done
+export LS_COLORS
+
+HISTCONTROL=ignoreboth
+HISTFILE=${HOME}/.bash_history
+HISTFILESIZE=500
+HISTSIZE=500
+export HISTCONTROL HISTFILE HISTFILESIZE HISTSIZE
+
+# Color Variables for Prompt
+# Lots of info at http://networking.ringofsaturn.com/Unix/Bash-prompts.php
+NONE='\[\033[00m\]'
+HBLU='\[\033[01;34m\]'
+GRN='\[\033[00;32m\]'
+YEL='\[\033[00;33m\]'
+PRPL='\[\033[00;35m\]'
+RED='\[\033[00;31m\]'
+
+# add info about git branch to the prompt
+function bash_prompt_git {
+	ref=$(git symbolic-ref HEAD 2> /dev/null) || return
+	echo -e " ("${ref#refs/heads/}")" 
+}
+
+# add shortened path to the prompt
+function bash_prompt_path {
+	P="${PWD/#${HOME}/~}"
+	if [ "${#P}" -gt 35 ]; then
+		echo -n "...${P: -32}"
+	else
+		echo -n "${P}"
+	fi
+}
+
+PS1=""
+case "${TERM}" in
+	xterm*)
+		# Set the title bar to the current directory
+		PS1='\[\033]2;\h:\w\007\]'
+		;;
+	vt100)
+		# Eliminate fancy things like colors
+		NONE=""
+		HBLU=""
+		GRN=""
+		YEL=""
+		PRPL=""
+		RED=""
+		;;
+	*)
+		;;
+esac
+PS1=$PS1$GRN'\A'$NONE' '$PRPL'\h'$NONE':'$HBLU'$(bash_prompt_path)'$YEL'$(bash_prompt_git)'$NONE
+if [ ${UID} -eq 0 ]; then
+	PS1=$PS1$RED
+fi
+export PS1=$PS1'\$'$NONE' '
+export PS2=$YEL'>'$NONE' '
+export PS3=$YEL'#?'$NONE' '
+export PS4=$YEL'+'$NONE' '
+
+
+# Sets the window size to 100% of height if xdotool is found
+if $TEST_FOR_PROGRAM 'xdotool'; then
+	xdotool getactivewindow windowsize --usehints 80 100%
+fi
+
+
+cd

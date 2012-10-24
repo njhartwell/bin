@@ -1,0 +1,20 @@
+#!/bin/bash
+
+cd "`dirname "$0"`"
+
+BASH_FILE=~/.bashrc
+grep ". '`pwd`/conf/bashrc'" "${BASH_FILE}" > /dev/null 2>&1
+
+if [ $? -ne 0 ]; then
+	echo ". '`pwd`/conf/bashrc'" >> "${BASH_FILE}"
+fi
+
+for F in vim vimrc; do
+	rm -rf ~/.$F
+	ln -s "`pwd`/conf/$F" ~/.$F
+done
+
+if [ ! -d ~/.ssh ]; then
+	mkdir ~/.ssh
+	chmod 700 ~/.ssh
+fi

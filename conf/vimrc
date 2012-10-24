@@ -1,0 +1,83 @@
+" Zen Coding:  ol#list>li*5>a[href=asdf]    then type Ctrl-y ,
+
+" Turn on syntax highlighting
+if has("syntax")
+	syntax on
+endif
+
+" Set some colors - http://vimdoc.sourceforge.net/htmldoc/syntax.html#E421
+highlight Search term=underline cterm=underline ctermfg=green ctermbg=darkblue gui=NONE guifg=white guibg=yellow
+highlight Comment cterm=NONE ctermfg=cyan
+highlight Visual cterm=bold ctermfg=black ctermbg=gray
+highlight StatusLine cterm=NONE ctermfg=yellow ctermbg=blue
+highlight String ctermfg=red
+highlight Normal cterm=NONE ctermfg=white
+
+" Set tab and indent preferences
+set noexpandtab tabstop=4 shiftwidth=4 softtabstop=4 smartindent autoindent
+
+if has("syntax")
+	" Stop the annoying behavior of '#' as the first character going to column 1
+	inoremap # X<BS>#
+endif
+
+" Searching options
+set incsearch ignorecase smartcase hlsearch
+
+" Show matching brackets for a short time
+set showmatch matchtime=2
+set laststatus=2
+
+" Allow backspace for everything
+set backspace=indent,eol,start
+
+if has("extra_search")
+	" Clear the last search when opening a file
+	nohlsearch
+
+	" Unhighlight your search automatically when editing
+	" Alternately, the following map will clear your search
+	" map \ :noh<cr> 
+	nnoremap a :noh<CR>a
+	nnoremap A :noh<CR>A
+	nnoremap i :noh<CR>i
+	nnoremap I :noh<CR>I
+	nnoremap o :noh<CR>o
+	nnoremap O :noh<CR>O
+endif
+
+if has("user_commands")
+	" Allow F1 to exit edit mode.  Can bring up help, but can also remove help
+	inoremap <F1> <Esc>
+	noremap <F1> :call MapF1()<CR>
+
+	function! MapF1()
+		if &buftype == "help"
+			exec 'quit'
+		else
+			exec 'help'
+		endif
+	endfunction
+endif
+
+" Report after N lines changed; default is two
+set report=2
+
+" Start up on the last line we were editing
+if has("autocmd")
+	autocmd BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$") | exe "normal g`\"" | endif
+endif
+
+" Have search results appear in the middle of the screen
+nmap n nzzzv
+nmap N Nzzzv
+nmap * *zzzv
+nmap # #zzzv
+nmap g* g*zzzv
+nmap g# g#zzzv
+
+" Search for "tags" file in current, then through parent directories
+set tags=tags;/
+
+" Single-key macros
+nmap Q oecho __FILE__.':'.__LINE__."\n";//NOCOMMIT-DEBUG<esc>
