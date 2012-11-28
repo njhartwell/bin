@@ -81,3 +81,8 @@ set tags=tags;/
 
 " Single-key macros
 nmap Q oecho __FILE__.':'.__LINE__."\n";//NOCOMMIT-DEBUG<esc>
+
+" Second-thought sudo edit
+cmap w!! w !sudo tee >/dev/null %
+call pathogen#infect()
+let g:syntastic_javascript_checker= "jslint"
