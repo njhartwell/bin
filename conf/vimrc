@@ -1,4 +1,11 @@
-" Zen Coding:  ol#list>li*5>a[href=asdf]    then type Ctrl-y ,
+set nocompatible
+if has("autocmd")
+    " Make .less appear as "less"
+    autocmd BufRead,BufNewFile *.less set filetype=less
+
+    " Enable bundles/plugins
+	call pathogen#infect()
+endif
 
 " Turn on syntax highlighting
 if has("syntax")
@@ -12,9 +19,10 @@ highlight Visual cterm=bold ctermfg=black ctermbg=gray
 highlight StatusLine cterm=NONE ctermfg=yellow ctermbg=blue
 highlight String ctermfg=red
 highlight Normal cterm=NONE ctermfg=white
+highlight MatchParen term=underline,bold cterm=underline,bold ctermbg=NONE
 
 " Set tab and indent preferences
-set noexpandtab tabstop=4 shiftwidth=4 softtabstop=4 smartindent autoindent
+set expandtab tabstop=4 shiftwidth=4 softtabstop=4 smartindent autoindent
 
 if has("syntax")
 	" Stop the annoying behavior of '#' as the first character going to column 1
@@ -37,7 +45,7 @@ if has("extra_search")
 
 	" Unhighlight your search automatically when editing
 	" Alternately, the following map will clear your search
-	" map \ :noh<cr> 
+	" map \ :noh<cr>
 	nnoremap a :noh<CR>a
 	nnoremap A :noh<CR>A
 	nnoremap i :noh<CR>i
@@ -82,7 +90,59 @@ set tags=tags;/
 " Single-key macros
 nmap Q oecho __FILE__.':'.__LINE__."\n";//NOCOMMIT-DEBUG<esc>
 
-" Second-thought sudo edit
-cmap w!! w !sudo tee >/dev/null %
-call pathogen#infect()
-let g:syntastic_javascript_checker= "jslint"
+if has("autocmd")
+	" Configure Syntastic syntax checking
+	map <F5> :SyntasticToggleMode<CR>
+	let g:syntastic_auto_jump=1
+	let g:syntastic_auto_loc_list=1
+	let g:syntastic_javascript_jslint_conf = "--es5=false --unparam=true"
+    
+	" Insert <Tab> or complete identifier
+	" if the cursor is after a keyword character
+	function MyTabOrComplete()
+		let col = col('.')-1
+		if !col || getline('.')[col-1] !~ '\k'
+			return "\<tab>"
+		else
+			return "\<C-N>"
+		endif
+	endfunction
+	inoremap <Tab> <C-R>=MyTabOrComplete()<CR>
+
+	" Highlight SQL, html syntax in strings
+	let php_sql_query=1
+	let php_htmlInStrings=1
+endif
+
+" Keep the cursor 5 lines away from the top/bottom
+set scrolloff=2
+
+" Handle mistyped commands
+if has("autocmd")
+	command W w
+	command Wq wq
+	command Q q
+endif
+
+" Spell checking toggle with S
+map S :setlocal spell! spelllang=en_us<CR>
+
+if has("autocmd")
+	" Automatically use spaces for YAML
+	autocmd Filetype yaml setlocal expandtab
+
+	" Automatically set up per-filetype settings, like tag matching
+	filetype plugin on
+	filetype detect
+	runtime macros/matchit.vim
+endif
+
+" Turn off search wrapping
+set nowrapscan
+
+" Set a custom status line
+" %< = trim from left, %f = filename, %h = [help], %r = [RO]
+" %= = right align, %b = char decimal, %B = char hex
+" %c = column number, %V = virtual column number,
+" %l = line, %L = total lines, %P = percentage through file
+set statusline=%<%f\ %h%m%r%=%b\ 0x%B\ \ \ %c%V,%l/%L\ %P
